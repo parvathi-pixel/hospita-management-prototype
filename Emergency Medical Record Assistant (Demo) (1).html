@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emergency Medical Record Assistant — Hackathon Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F8FA; --surface:#FFFFFF; --ink:#0E2A3A; --muted:#506978; --line:#D8E3E9;
+  --teal:#0F7C86; --teal-hover:#0B636B; --teal-text:#0B5E66; --teal-soft:#E1F3F4; --on-teal:#FFFFFF;
+  --blue:#2A62A8; --blue-soft:#E7EFFA;
+  --red:#B5202A; --red-btn:#C0262D; --red-soft:#FCEBEC;
+  --amber:#8A5200; --amber-soft:#FFF2D8;
+  --green:#1B6E44; --green-soft:#E3F4EB;
+  --shadow:0 12px 40px rgba(14,42,58,.14);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1920; --surface:#112630; --ink:#E6F0F4; --muted:#9AB0BB; --line:#25414D;
+    --teal:#3DBFCA; --teal-hover:#63D3DC; --teal-text:#7FDDE5; --teal-soft:#123A41; --on-teal:#04232A;
+    --blue:#82B0EA; --blue-soft:#14283F;
+    --red:#FF8086; --red-btn:#D1454B; --red-soft:#3A1A1E;
+    --amber:#F2B866; --amber-soft:#3A2D13;
+    --green:#5FCF97; --green-soft:#12342A;
+    --shadow:0 12px 40px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1920; --surface:#112630; --ink:#E6F0F4; --muted:#9AB0BB; --line:#25414D;
+  --teal:#3DBFCA; --teal-hover:#63D3DC; --teal-text:#7FDDE5; --teal-soft:#123A41; --on-teal:#04232A;
+  --blue:#82B0EA; --blue-soft:#14283F;
+  --red:#FF8086; --red-btn:#D1454B; --red-soft:#3A1A1E;
+  --amber:#F2B866; --amber-soft:#3A2D13;
+  --green:#5FCF97; --green-soft:#12342A;
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4,p{margin:0;}
+h1{font-size:clamp(32px,4.4vw,48px);line-height:1.12;font-weight:700;letter-spacing:-.02em;}
+h2{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.01em;}
+h3{font-size:18px;line-height:1.3;font-weight:600;}
+button{font:inherit;color:inherit;}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
+.muted{color:var(--muted);}
+.sm-text{font-size:14px;}
+.ic{flex:none;vertical-align:middle;}
+
+/* chrome */
+.demo-bar{display:flex;gap:8px;align-items:center;justify-content:center;text-align:center;padding:8px 16px;background:var(--blue-soft);color:var(--blue);font-size:13.5px;font-weight:500;border-bottom:1px solid var(--line);}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 28px;background:var(--surface);border-bottom:1px solid var(--line);}
+.brand{display:flex;gap:10px;align-items:center;font-weight:600;background:none;border:0;padding:0;cursor:pointer;text-align:left;}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--teal);color:var(--on-teal);display:grid;place-items:center;}
+.userchip{display:flex;align-items:center;gap:12px;font-size:14px;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+/* buttons, chips */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;text-decoration:none;}
+.btn:hover{border-color:var(--teal);}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--on-teal);}
+.btn.primary:hover{background:var(--teal-hover);border-color:var(--teal-hover);}
+.btn.danger{background:var(--red-btn);border-color:var(--red-btn);color:#fff;}
+.btn.danger:hover{filter:brightness(.92);}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--teal-text);}
+.btn.lg{padding:14px 22px;font-size:17px;border-radius:12px;}
+.btn.sm{padding:6px 12px;font-size:14px;}
+.btn[disabled]{opacity:.55;cursor:not-allowed;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:500;background:var(--teal-soft);color:var(--teal-text);white-space:nowrap;}
+.chip.red{background:var(--red-soft);color:var(--red);}
+.chip.amber{background:var(--amber-soft);color:var(--amber);}
+.chip.blue{background:var(--blue-soft);color:var(--blue);}
+.chip.green{background:var(--green-soft);color:var(--green);}
+.src{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:2px 0;color:var(--teal-text);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;}
+.card h3{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.grid{display:grid;gap:16px;}
+.g3{grid-template-columns:repeat(auto-fit,minmax(270px,1fr));}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;}
+.stat{display:flex;gap:14px;align-items:center;}
+.stat .num{font-size:32px;font-weight:600;line-height:1;}
+.badge-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal-text);flex:none;}
+.tone-red{background:var(--red-soft);color:var(--red);}
+.tone-amber{background:var(--amber-soft);color:var(--amber);}
+.tone-blue{background:var(--blue-soft);color:var(--blue);}
+.tone-green{background:var(--green-soft);color:var(--green);}
+
+/* landing */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center;padding:56px 0 40px;}
+.hero .sub{font-size:22px;color:var(--teal-text);margin-top:14px;font-weight:500;}
+.hero .lead{margin-top:16px;max-width:56ch;color:var(--muted);font-size:17px;}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:28px;}
+.role{display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;}
+.role:hover{border-color:var(--teal);}
+.role.main{border-color:var(--teal);background:var(--teal-soft);}
+.role b{font-weight:600;}
+.mock{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);}
+.mock .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:600;}
+.mock .row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:8px 0 40px;}
+.feat .card p{color:var(--muted);font-size:15px;}
+.foot{padding:24px 0 40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);}
+
+/* login */
+.login-wrap{min-height:calc(100vh - 140px);display:grid;place-items:center;padding:32px 16px;}
+.login{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:var(--shadow);}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:16px;}
+.field label{font-weight:500;font-size:15px;}
+input[type=text],input[type=password],input[type=date]{font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;}
+input:focus{outline:3px solid var(--blue);outline-offset:1px;}
+.demo-box{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--amber-soft);color:var(--amber);font-size:14px;}
+.demo-box code{font:inherit;font-weight:600;}
+.err{margin-top:12px;color:var(--red);font-size:14.5px;font-weight:500;}
+
+/* shell */
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 110px);}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:0;background:none;cursor:pointer;text-align:left;font-weight:500;color:var(--ink);}
+.nav:hover{background:var(--bg);}
+.nav.on{background:var(--teal-soft);color:var(--teal-text);}
+.side .sep{height:1px;background:var(--line);margin:10px 4px;}
+.side .lbl{font-size:13px;color:var(--muted);padding:2px 12px;}
+.main{padding:28px 32px 56px;width:100%;max-width:1120px;}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+.pagehead p{color:var(--muted);margin-top:4px;}
+.secure{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);margin-top:18px;}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr;}
+  .side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px;}
+  .side .sep,.side .lbl{display:none;}
+  .nav{white-space:nowrap;}
+  .main{padding:20px 16px 48px;}
+  .hero{grid-template-columns:1fr;gap:32px;padding-top:32px;}
+  .topbar{padding:12px 16px;}
+  .wrap{padding:0 16px;}
+}
+
+/* tables */
+.scroll{overflow-x:auto;}
+.tbl{width:100%;border-collapse:collapse;font-size:15px;}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:13.5px;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+.tbl td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;}
+.tbl tr:last-child td{border-bottom:0;}
+.tbl tr.newrow td{background:var(--teal-soft);}
+
+/* search */
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap;}
+.seg button{border:0;background:none;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:500;}
+.seg button.on{background:var(--surface);color:var(--teal-text);box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.searchrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.searchrow input{flex:1;min-width:220px;}
+.pcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;margin-top:16px;}
+.avatar{width:54px;height:54px;border-radius:50%;background:var(--teal-soft);color:var(--teal-text);display:grid;place-items:center;font-weight:600;font-size:18px;}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin:10px 0 0;}
+.facts div{min-width:120px;}
+.facts dt{font-size:13px;color:var(--muted);}
+.facts dd{margin:0;font-weight:500;}
+.facts dd.red{color:var(--red);font-weight:600;}
+@media (max-width:700px){.pcard{grid-template-columns:1fr;}}
+
+/* access */
+.reasonbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0;}
+.reasonbox div{background:var(--bg);border-radius:12px;padding:12px 14px;}
+.reasonbox dt{font-size:13px;color:var(--muted);}
+.reasonbox dd{margin:2px 0 0;font-weight:600;}
+.checkrow{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;}
+.checkrow input{width:20px;height:20px;margin-top:2px;accent-color:var(--teal);}
+.granted{display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;background:var(--green-soft);color:var(--green);font-weight:600;margin-top:16px;}
+
+/* patient context */
+.pthead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+.pthead .who{display:flex;align-items:center;gap:14px;}
+.pthead .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:22px;}
+.tabs button{display:flex;gap:8px;align-items:center;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;cursor:pointer;font-weight:500;color:var(--muted);}
+.tabs button.on{color:var(--teal-text);border-bottom-color:var(--teal);}
+.allergy{display:flex;gap:20px;align-items:center;flex-wrap:wrap;background:var(--red-soft);border:2px solid var(--red);border-radius:16px;padding:20px 24px;margin-bottom:16px;}
+.allergy .big{font-size:36px;line-height:1.1;font-weight:700;color:var(--red);}
+.allergy .icon{width:52px;height:52px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;}
+.allergy h2{font-size:15px;color:var(--red);font-weight:600;}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+.list li{display:flex;flex-direction:column;gap:2px;}
+.list b{font-weight:600;}
+.callout{background:var(--amber-soft);border-color:transparent;}
+.callout h3,.callout p{color:var(--amber);}
+.note{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;border-radius:12px;background:var(--blue-soft);color:var(--blue);font-size:14.5px;}
+.nextrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+
+/* timeline */
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:28px;align-items:start;}
+.sticky{position:sticky;top:16px;}
+@media (max-width:1000px){.split{grid-template-columns:1fr;}.sticky{position:static;}}
+.tl{list-style:none;margin:0;padding:0;}
+.tl-item{display:grid;grid-template-columns:104px 28px minmax(0,1fr);column-gap:10px;position:relative;padding-bottom:14px;}
+.tl-item::before{content:"";position:absolute;left:127px;top:26px;bottom:-12px;width:2px;background:var(--line);}
+.tl-item:last-child::before{display:none;}
+.tl-date{text-align:right;padding-top:9px;}
+.tl-date b{display:block;font-weight:600;}
+.tl-date span{font-size:12.5px;color:var(--muted);}
+.tl-dot{width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--teal);margin:14px auto 0;position:relative;z-index:1;}
+.tl-item.red .tl-dot{border-color:var(--red);}
+.tl-item.amber .tl-dot{border-color:var(--amber);}
+.tl-card{display:block;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;}
+.tl-card:hover{border-color:var(--teal);}
+.tl-item.sel .tl-card{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft);}
+.tl-card b{display:block;font-weight:600;}
+.tl-card small{color:var(--muted);font-size:13px;}
+@media (max-width:560px){
+  .tl-item{grid-template-columns:78px 24px minmax(0,1fr);}
+  .tl-item::before{left:100px;}
+}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0 0;font-size:15px;}
+dl.kv dt{color:var(--muted);}
+dl.kv dd{margin:0;font-weight:500;}
+
+/* records */
+.chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.fchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14.5px;font-weight:500;}
+.fchip.on{background:var(--teal);color:var(--on-teal);border-color:var(--teal);}
+.dategrp{margin-top:22px;}
+.dategrp>h4{font-size:14.5px;color:var(--muted);font-weight:600;margin-bottom:8px;}
+.rec{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start;margin-bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;}
+.rec.flash{border-color:var(--teal);box-shadow:0 0 0 4px var(--teal-soft);}
+.rec-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;}
+.rec-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.rec p{margin-top:6px;font-size:15px;}
+@media (max-width:640px){.rec{grid-template-columns:auto 1fr;}.rec-act{grid-column:1 / -1;}}
+
+/* modal + doc */
+.overlay{position:fixed;inset:0;background:rgba(8,24,32,.6);display:grid;place-items:center;padding:16px;z-index:50;}
+.modal{background:var(--surface);border-radius:18px;max-width:660px;width:100%;max-height:90vh;overflow:auto;padding:22px;box-shadow:var(--shadow);}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;}
+.doc{border:1px dashed var(--line);border-radius:12px;padding:18px;background:var(--bg);}
+.doc .wm{font-size:13px;color:var(--amber);background:var(--amber-soft);display:inline-block;padding:2px 10px;border-radius:999px;margin-bottom:10px;font-weight:500;}
+.doc h4{font-size:17px;}
+.doc .tbl{margin-top:10px;}
+
+/* misc */
+.how{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 4px;}
+.how .chip{font-size:14px;padding:5px 14px;}
+.bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:8px;}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;font-size:13px;color:var(--muted);}
+.bars i{display:block;width:100%;max-width:38px;background:var(--teal);border-radius:8px 8px 4px 4px;}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;z-index:60;max-width:92vw;}
+.rowlist{display:flex;flex-direction:column;}
+.rowlist>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+.rowlist>div:first-child{border-top:0;}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto !important;transition:none !important;animation:none !important;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- icons ---------- */
+var ICONS={
+  shield:'<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/>',
+  alert:'<path d="M12 3.5 2.8 19.5h18.4L12 3.5z"/><path d="M12 10v4.5"/><path d="M12 17.2v.1"/>',
+  pill:'<path d="M10.5 20.5a4.95 4.95 0 0 1-7-7l10-10a4.95 4.95 0 0 1 7 7l-10 10z"/><path d="M8.5 8.5l7 7"/>',
+  scissors:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>',
+  activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  flask:'<path d="M9 3h6"/><path d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><path d="M7.5 15h9"/>',
+  scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/>',
+  clip:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9.5 4h5v3h-5zM9 12h6M9 16h4"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 2.8-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14.8c2.2.6 3.5 2.3 3.5 5.2"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  home:'<path d="M3 11l9-7.5 9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  log:'<path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  building:'<path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5M12 9v4M10 11h4"/>',
+  logout:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.1"/>',
+  back:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5"/>',
+  cross:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z"/>'
+};
+function ic(n,s){s=s||20;return '<svg class="ic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
+
+/* ---------- fictional demo data ---------- */
+var PAT={id:'PAT1024',name:'Arun Kumar',age:42,dob:'14 March 1984',dobIso:'1984-03-14',sex:'Male',blood:'O+',allergy:'Penicillin',lastVisit:'18 September 2026'};
+var PATIENTS=[
+  PAT,
+  {id:'PAT1031',name:'Meena Iyer',age:57,dobIso:'1969-07-02',blood:'B+',allergy:'None recorded',lastVisit:'30 September 2026'},
+  {id:'PAT1018',name:'Rohan Das',age:31,dobIso:'1995-11-20',blood:'A+',allergy:'None recorded',lastVisit:'30 September 2026'},
+  {id:'PAT1040',name:'Fatima Noor',age:26,dobIso:'2000-01-09',blood:'AB+',allergy:'Latex',lastVisit:'27 September 2026'}
+];
+var TYPE_LABEL={consultation:'Consultation',diagnosis:'Diagnosis',prescription:'Prescription',lab:'Lab report',scan:'Scan report',surgery:'Surgery',allergy:'Allergy'};
+var TYPE_ICON={consultation:'clip',diagnosis:'activity',prescription:'pill',lab:'flask',scan:'scan',surgery:'scissors',allergy:'alert'};
+var TYPE_TONE={consultation:'',diagnosis:'tone-blue',prescription:'tone-blue',lab:'',scan:'tone-green',surgery:'tone-amber',allergy:'tone-red'};
+
+var RECORDS=[
+ {id:'r-er',date:'2026-10-02',long:'02 October 2026',short:'02 Oct 2026',type:'consultation',srcLabel:'Emergency department record',title:'Emergency department visit',by:'Dr. Priya Sharma',place:'Demo General Hospital, Emergency Department',
+  summary:'Emergency arrival logged. Clinical notes for this visit are not part of the demo dataset.',details:[['Record type','Emergency visit'],['Status','Open']]},
+ {id:'r-lab',date:'2026-09-28',long:'28 September 2026',short:'28 Sep 2026',type:'lab',srcLabel:'Lab report',title:'Blood test',by:'Demo General Hospital Laboratory',place:'Demo General Hospital',
+  summary:'Routine blood panel. Values below are fictional.',
+  table:[['Hemoglobin','14.2 g/dL','13.0 – 17.0'],['White cell count','7.1 ×10³/µL','4.0 – 11.0'],['Creatinine','0.9 mg/dL','0.7 – 1.3'],['Fasting glucose','96 mg/dL','70 – 99'],['Potassium','4.2 mmol/L','3.5 – 5.1']],details:[['Sample collected','28 Sep 2026'],['Panel','Complete blood count and basic metabolic panel']]},
+ {id:'r-rxA',date:'2026-09-28',long:'28 September 2026',short:'28 Sep 2026',type:'prescription',srcLabel:'Prescription',title:'Prescription — Medicine A',by:'Dr. Anita Joseph',place:'Demo General Hospital',
+  summary:'Medicine A (placeholder name) prescribed.',rx:[['Medicine A','1 tablet, once daily','30 days']],details:[['Issued','28 Sep 2026']]},
+ {id:'r-visit',date:'2026-09-18',long:'18 September 2026',short:'18 Sep 2026',type:'consultation',srcLabel:'Consultation record',title:'Outpatient follow-up',by:'Dr. Anita Joseph',place:'Demo General Hospital',
+  summary:'Chest X-ray reviewed. Blood pressure recorded as 138/86 mmHg.',details:[['Visit type','Outpatient follow-up'],['Blood pressure','138/86 mmHg']]},
+ {id:'r-xray',date:'2026-09-15',long:'15 September 2026',short:'15 Sep 2026',type:'scan',srcLabel:'Radiology report',title:'Chest X-ray',by:'Dr. Imran Qureshi, Radiology',place:'Lakeshore Demo Hospital',
+  summary:'Chest X-ray, front view. Report text is fictional.',findings:{f:'Lungs clear. Heart size within normal limits.',i:'No acute abnormality described in this demo report.'},details:[['Study','Chest X-ray, PA view'],['Reported','15 Sep 2026']]},
+ {id:'r-rxB',date:'2026-01-22',long:'22 January 2026',short:'22 Jan 2026',type:'prescription',srcLabel:'Prescription',title:'New medication prescribed — Medicine B',by:'Dr. Anita Joseph',place:'Demo General Hospital',
+  summary:'Medicine B (placeholder name) added to the plan.',rx:[['Medicine B','1 tablet, once daily','Ongoing']],details:[['Issued','22 Jan 2026']]},
+ {id:'r-fu',date:'2025-02-11',long:'11 February 2025',short:'11 Feb 2025',type:'consultation',srcLabel:'Consultation record',title:'Follow-up consultation',by:'Dr. Meera Nair',place:'Riverside Demo Clinic',
+  summary:'Blood pressure review. Lifestyle advice documented.',details:[['Visit type','Follow-up'],['Blood pressure','134/84 mmHg']]},
+ {id:'r-surg',date:'2024-06-20',long:'20 June 2024',short:'20 Jun 2024',type:'surgery',srcLabel:'Surgical record',title:'Appendectomy',by:'Dr. Karthik Rao, Surgery',place:'Lakeshore Demo Hospital',
+  summary:'Appendectomy performed. Recovery documented as uneventful.',details:[['Procedure','Appendectomy'],['Date','20 Jun 2024'],['Recovery','Uneventful (demo)']]},
+ {id:'r-allergy',date:'2024-03-12',long:'12 March 2024',short:'12 Mar 2024',type:'allergy',srcLabel:'Consultation record',title:'Penicillin allergy recorded',by:'Dr. Meera Nair',place:'Riverside Demo Clinic',
+  summary:'Patient-reported penicillin allergy documented during consultation.',details:[['Allergen','Penicillin'],['Reaction noted','Skin rash (demo)'],['Documented','12 Mar 2024']]},
+ {id:'r-htn',date:'2022-08-09',long:'09 August 2022',short:'09 Aug 2022',type:'diagnosis',srcLabel:'Consultation record',title:'Hypertension diagnosed',by:'Dr. Meera Nair',place:'Riverside Demo Clinic',
+  summary:'Hypertension diagnosed after repeated elevated blood pressure readings.',details:[['Diagnosis','Hypertension'],['Diagnosed','09 Aug 2022']]}
+];
+function rec(id){for(var i=0;i<RECORDS.length;i++){if(RECORDS[i].id===id)return RECORDS[i];}return null;}
+
+var SUMMARY={
+  allergies:[{t:'Penicillin',r:'r-allergy'}],
+  meds:[{t:'Medicine A',n:'Prescribed 28 Sep 2026',r:'r-rxA'},{t:'Medicine B',n:'Prescribed 22 Jan 2026',r:'r-rxB'}],
+  surgeries:[{t:'Appendectomy — 2024',r:'r-surg'}],
+  history:[{t:'Hypertension — diagnosed 2022',r:'r-htn'}],
+  labs:[{t:'Blood test — 28 September 2026',r:'r-lab'}],
+  scans:[{t:'Chest X-ray — 15 September 2026',r:'r-xray'}]
+};
+var SOURCES=[
+  ['Allergy: Penicillin','r-allergy'],['Previous surgery: Appendectomy','r-surg'],['Current medication: Medicine A','r-rxA'],
+  ['Current medication: Medicine B','r-rxB'],['Medical history: Hypertension','r-htn'],['Recent lab result: Blood test','r-lab'],['Relevant scan: Chest X-ray','r-xray']
+];
+var TIMELINE=[
+  {r:'r-htn',label:'2022',text:'Hypertension diagnosed'},
+  {r:'r-allergy',label:'2024',text:'Penicillin allergy recorded',tone:'amber'},
+  {r:'r-surg',label:'2024',text:'Appendectomy'},
+  {r:'r-fu',label:'2025',text:'Follow-up consultation'},
+  {r:'r-rxB',label:'2026',text:'New medication prescribed'},
+  {r:'r-xray',label:'15 Sep 2026',text:'Chest X-ray'},
+  {r:'r-visit',label:'18 Sep 2026',text:'Outpatient follow-up'},
+  {r:'r-lab',label:'28 Sep 2026',text:'Blood test'},
+  {r:'r-er',label:'02 Oct 2026',text:'Emergency visit',tone:'red'}
+];
+var NEW_ENTRY={doctor:'Dr. Priya Sharma',docId:'DOC1001',patient:'Arun Kumar',patId:'PAT1024',type:'Emergency',date:'02 October 2026',time:'10:42 AM',reason:'Emergency treatment',isNew:true};
+var SEED_LOG=[
+  {doctor:'Dr. Priya Sharma',docId:'DOC1001',patient:'Meena Iyer',patId:'PAT1031',type:'Routine',date:'01 October 2026',time:'04:20 PM',reason:'Scheduled consultation'},
+  {doctor:'Dr. Vikram Sethi',docId:'DOC1012',patient:'Rohan Das',patId:'PAT1018',type:'Emergency',date:'30 September 2026',time:'02:48 AM',reason:'Emergency treatment'},
+  {doctor:'Dr. Anita Joseph',docId:'DOC1003',patient:'Arun Kumar',patId:'PAT1024',type:'Routine',date:'28 September 2026',time:'11:05 AM',reason:'Lab result review'},
+  {doctor:'Dr. Rahul Menon',docId:'DOC1007',patient:'Arun Kumar',patId:'PAT1024',type:'Routine',date:'18 September 2026',time:'09:15 AM',reason:'Outpatient follow-up'}
+];
+var CREDS={doctor:{id:'DOC1001',pw:'demo123'},admin:{id:'ADM2001',pw:'demo123'},patient:{id:'PAT1024',pw:'demo123'}};
+
+/* ---------- state ---------- */
+var S={role:null,route:'landing',patient:null,access:false,confirm:false,accessErr:false,logged:false,err:'',
+  mode:'id',q:'',searched:false,emergency:false,filter:'all',tlSel:'r-allergy',focus:null,adminFilter:'all',log:SEED_LOG.slice()};
+var app=document.getElementById('app');
+var modalRoot=document.getElementById('modal-root');
+var DOCTOR_ROUTES=['dashboard','search','access','summary','timeline','records','sources','audit'];
+var PT_ROUTES=['summary','timeline','records','sources'];
+var ROUTES=['landing','login-doctor','login-admin','login-patient','admin','patient'].concat(DOCTOR_ROUTES);
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function initials(n){return n.split(' ').map(function(w){return w[0];}).join('').slice(0,2);}
+function toast(msg){
+  var old=document.querySelector('.toast');if(old)old.remove();
+  var t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2800);
+}
+
+/* ---------- shared pieces ---------- */
+function demoBar(){return '<div class="demo-bar">'+ic('info',16)+'<span>Hackathon prototype. Fictional demo data only. Not connected to any real hospital, patient record or health database.</span></div>';}
+function brand(){return '<button class="brand" data-go="landing" aria-label="Emergency Medical Record Assistant home"><span class="logo">'+ic('cross',20)+'</span><span>Emergency Medical Record Assistant</span></button>';}
+function userLabel(){
+  if(S.role==='doctor')return 'Dr. Priya Sharma, DOC1001';
+  if(S.role==='admin')return 'Hospital Admin, ADM2001';
+  if(S.role==='patient')return 'Arun Kumar, PAT1024';
+  return '';
+}
+function topbar(){
+  var right=S.role?'<div class="userchip"><span class="chip blue">Demo account</span><span class="muted">'+userLabel()+'</span><button class="btn sm" data-act="logout">'+ic('logout',16)+'Log out</button></div>':'<button class="btn sm" data-go="landing">Home</button>';
+  return '<header class="topbar">'+brand()+right+'</header>';
+}
+function page(inner){return demoBar()+topbar()+inner;}
+
+function doctorNav(){
+  var r=S.route;
+  function n(route,icon,label,on){return '<button class="nav'+((on||r===route)?' on':'')+'" data-go="'+route+'">'+ic(icon,18)+label+'</button>';}
+  var h=n('dashboard','home','Dashboard')+n('search','search','Patient search');
+  if(S.patient){
+    h+='<div class="sep"></div><div class="lbl">Current patient</div>'+n(S.access?'summary':'access','alert','Arun Kumar',PT_ROUTES.indexOf(r)>-1||r==='access');
+  }
+  h+='<div class="sep"></div>'+n('audit','log','Access log');
+  return '<aside class="side" aria-label="Doctor navigation">'+h+'</aside>';
+}
+function doctorShell(inner){return page('<div class="shell">'+doctorNav()+'<main class="main">'+inner+'</main></div>');}
+function ptTabs(active){
+  var t=[['summary','Emergency summary','alert'],['timeline','Health timeline','clock'],['records','Full record','file'],['sources','Summary sources','link'],['audit','Access log','log']];
+  return '<nav class="tabs" aria-label="Patient record sections">'+t.map(function(x){return '<button class="'+(x[0]===active?'on':'')+'" data-go="'+x[0]+'">'+ic(x[2],17)+x[1]+'</button>';}).join('')+'</nav>';
+}
+function ptHead(){
+  return '<div class="pthead"><div class="who"><div class="avatar">AK</div><div><h2>Arun Kumar</h2><div class="chips"><span class="chip blue">PAT1024</span><span class="chip blue">42 years</span><span class="chip blue">Blood group O+</span></div></div></div>'+
+    '<span class="chip green">'+ic('check',15)+'Emergency access active</span></div>';
+}
+function dl(arr){return '<dl class="kv">'+arr.map(function(x){return '<dt>'+x[0]+'</dt><dd>'+x[1]+'</dd>';}).join('')+'</dl>';}
+
+/* ---------- landing ---------- */
+function viewLanding(){
+  var mock='<div class="mock" aria-hidden="true"><div class="mh"><span>Emergency Patient Summary</span><span class="chip blue">Demo</span></div>'+
+    '<div class="allergy" style="padding:14px 16px;margin-bottom:10px;gap:14px"><div class="icon" style="width:40px;height:40px">'+ic('alert',22)+'</div><div><h2 style="margin-bottom:2px">Allergies</h2><div class="big" style="font-size:26px">Penicillin</div></div></div>'+
+    '<div class="row"><span>Current medications</span><b>2</b></div><div class="row"><span>Previous surgeries</span><b>Appendectomy, 2024</b></div><div class="row"><span>Major history</span><b>Hypertension, 2022</b></div><div class="row"><span>Latest lab</span><b>28 Sep 2026</b></div></div>';
+  var roles='<div class="roles">'+
+    '<button class="role main" data-go="login-doctor">'+'<span class="badge-ic">'+ic('user',22)+'</span><b>Doctor Login</b><span class="muted sm-text">Emergency workflow</span></button>'+
+    '<button class="role" data-go="login-admin"><span class="badge-ic">'+ic('building',22)+'</span><b>Hospital Admin Login</b><span class="muted sm-text">Access oversight</span></button>'+
+    '<button class="role" data-go="login-patient"><span class="badge-ic">'+ic('heart',22)+'</span><b>Patient Login</b><span class="muted sm-text">Your own record</span></button></div>';
+  var feat='<section class="feat" aria-label="What makes it different">'+
+    '<div class="card"><h3><span class="badge-ic tone-red">'+ic('alert',20)+'</span>Emergency summary</h3><p>Allergies, medications, surgeries and key history on one screen, before anything else.</p></div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('clock',20)+'</span>Health timeline</h3><p>Scattered records placed in date order. Select any event to open its source.</p></div>'+
+    '<div class="card"><h3><span class="badge-ic tone-blue">'+ic('link',20)+'</span>Source-linked facts</h3><p>Every line in the summary points back to the record it came from.</p></div>'+
+    '<div class="card"><h3><span class="badge-ic tone-green">'+ic('log',20)+'</span>Access audit trail</h3><p>Each record access is logged with who, when and why.</p></div></section>';
+  return demoBar()+topbar()+'<div class="wrap"><section class="hero"><div><h1>Emergency Medical Record Assistant</h1><p class="sub">Critical patient information, available when it matters most.</p>'+
+    '<p class="lead">Securely organize medical history so authorized healthcare professionals can quickly understand relevant patient information during emergency care.</p>'+roles+'</div><div>'+mock+'<p class="muted sm-text" style="margin-top:10px;text-align:center">Preview of the emergency summary, fictional data</p></div></section>'+feat+
+    '<div class="foot">This is a hackathon prototype that demonstrates a workflow. It does not diagnose, prescribe, or make medical decisions, and it makes no connection to ABDM, ABHA, NMR, HPR, HFR or any real hospital database. All people, records and hospitals shown are fictional.</div></div>';
+}
+
+/* ---------- login ---------- */
+function viewLogin(role){
+  var cfg={doctor:{t:'Doctor login',l:'Doctor ID',note:'DEMO doctor account. This login does not verify any real medical registration number.'},
+    admin:{t:'Hospital admin login',l:'Admin ID',note:'DEMO administrator account for the prototype only.'},
+    patient:{t:'Patient login',l:'Patient ID',note:'DEMO patient account. Shows a fictional patient record only.'}}[role];
+  var c=CREDS[role];
+  return demoBar()+topbar()+'<div class="login-wrap"><div class="login"><span class="chip amber">Demo account</span><h2 style="margin-top:12px">'+cfg.t+'</h2><p class="muted" style="margin-top:6px">'+cfg.note+'</p>'+
+    '<div class="field"><label for="uid">'+cfg.l+'</label><input id="uid" type="text" autocomplete="off" placeholder="'+c.id+'"></div>'+
+    '<div class="field"><label for="pwd">Password</label><input id="pwd" type="password" autocomplete="off" placeholder="Demo password"></div>'+
+    (S.err?'<div class="err" role="alert">'+S.err+'</div>':'')+
+    '<div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap"><button class="btn primary lg" data-act="login" data-arg="'+role+'">Log in</button><button class="btn lg" data-act="fill" data-arg="'+role+'">Fill demo credentials</button></div>'+
+    '<div class="demo-box">Demo credentials: '+cfg.l+' <code>'+c.id+'</code> · Password <code>'+c.pw+'</code></div>'+
+    '<button class="btn ghost" style="margin-top:12px" data-go="landing">'+ic('back',16)+'Back to home</button></div></div>';
+}
+
+/* ---------- doctor dashboard ---------- */
+function viewDashboard(){
+  var rows=PATIENTS.map(function(p,i){
+    var em=(p.id==='PAT1024'||p.id==='PAT1018');
+    return '<tr><td><b>'+p.name+'</b></td><td>'+p.id+'</td><td>'+p.lastVisit+'</td><td><span class="chip '+(em?'red':'')+'">'+(em?'Emergency':'Routine')+'</span></td><td style="text-align:right">'+
+      (p.id==='PAT1024'?'<button class="btn sm" data-act="quick" data-arg="PAT1024">Open</button>':'<button class="btn sm" data-act="unavailable">Open</button>')+'</td></tr>';
+  }).join('');
+  return doctorShell('<div class="pagehead"><div><h2>Welcome, Dr. Priya Sharma</h2><p>Demo General Hospital (fictional)</p></div>'+
+    '<button class="btn danger lg" data-act="emerg">'+ic('alert',20)+'Emergency Patient Access</button></div>'+
+    '<div class="stats"><div class="card stat"><span class="badge-ic">'+ic('users',22)+'</span><div><div class="num">18</div><div class="muted">Today\'s patients</div></div></div>'+
+    '<div class="card stat"><span class="badge-ic tone-red">'+ic('alert',22)+'</span><div><div class="num">3</div><div class="muted">Emergency cases</div></div></div>'+
+    '<div class="card stat"><span class="badge-ic tone-blue">'+ic('log',22)+'</span><div><div class="num">'+S.log.length+'</div><div class="muted">Recent access entries</div></div></div></div>'+
+    '<div class="grid g2" style="margin-top:16px;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr)"><div class="card"><h3>Recent patient records</h3><div class="scroll"><table class="tbl"><thead><tr><th>Patient</th><th>ID</th><th>Last visit</th><th>Type</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+    '<div class="card"><h3>'+ic('search',20)+'Search patient</h3><p class="muted sm-text">Search by patient ID or name.</p><div class="field" style="margin-top:10px"><label for="dq" class="sm-text">Demo patient ID or name</label><input id="dq" type="text" placeholder="PAT1024 or Arun Kumar"></div>'+
+    '<button class="btn primary" style="margin-top:12px;width:100%" data-act="dash-search">Search patient</button></div></div>'+
+    '<div class="secure">'+ic('lock',16)+'Patient information is accessible only to authorized users.</div>');
+}
+
+/* ---------- patient search ---------- */
+function results(){
+  var q=S.q.trim().toLowerCase();if(!q)return [];
+  return PATIENTS.filter(function(p){
+    if(S.mode==='id')return p.id.toLowerCase().indexOf(q)>-1;
+    if(S.mode==='name')return p.name.toLowerCase().indexOf(q)>-1;
+    return p.dobIso===S.q.trim();
+  });
+}
+function patCard(p){
+  var full=p.id==='PAT1024';
+  return '<div class="card pcard"><div class="avatar">'+initials(p.name)+'</div><div><h3 style="margin:0">'+p.name+'</h3><div class="muted">Patient ID: '+p.id+'</div><div class="muted">'+p.age+' years</div>'+
+    '<dl class="facts"><div><dt>Blood group</dt><dd>'+p.blood+'</dd></div><div><dt>Known allergy</dt><dd class="'+(p.allergy!=='None recorded'?'red':'')+'">'+p.allergy+'</dd></div><div><dt>Last hospital visit</dt><dd>'+p.lastVisit+'</dd></div></dl></div>'+
+    '<div>'+(full?'<button class="btn danger lg" data-act="open-record">Open Emergency Record</button>':'<button class="btn" data-act="unavailable">Demo record not included</button>')+'</div></div>';
+}
+function viewSearch(){
+  var modes=[['id','Demo patient ID'],['name','Name'],['dob','Date of birth']];
+  var input=S.mode==='dob'?'<input id="q" type="date" value="'+esc(S.q)+'" aria-label="Date of birth">':'<input id="q" type="text" value="'+esc(S.q)+'" placeholder="'+(S.mode==='id'?'PAT1024':'Arun Kumar')+'" aria-label="'+(S.mode==='id'?'Demo patient ID':'Patient name')+'" autocomplete="off">';
+  var out='';
+  if(S.searched){
+    var res=results();
+    out=res.length?res.map(patCard).join(''):'<div class="card" style="margin-top:16px"><b>No demo patient matches.</b><p class="muted" style="margin-top:4px">Try patient ID PAT1024, the name Arun Kumar, or date of birth 14 March 1984.</p></div>';
+  } else {
+    out='<div class="card" style="margin-top:16px"><b>Try the demo patient</b><p class="muted" style="margin-top:4px">Patient ID PAT1024, name Arun Kumar, date of birth 14 March 1984.</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn sm" data-act="quick" data-arg="PAT1024">Search PAT1024</button></div></div>';
+  }
+  return doctorShell('<div class="pagehead"><div><h2>Patient search</h2><p>Find a patient to open the emergency record.</p></div></div>'+
+    (S.emergency?'<div class="note" style="margin:0 0 16px">'+ic('alert',18)+'<span>Emergency search. Find the patient, then open the emergency record to continue.</span></div>':'')+
+    '<div class="card"><div class="seg" role="tablist">'+modes.map(function(m){return '<button class="'+(S.mode===m[0]?'on':'')+'" data-act="mode" data-arg="'+m[0]+'">'+m[1]+'</button>';}).join('')+'</div>'+
+    '<div class="searchrow">'+input+'<button class="btn primary" data-act="search">'+ic('search',18)+'Search</button></div></div>'+out+
+    '<div class="secure">'+ic('lock',16)+'Patient information is accessible only to authorized users.</div>');
+}
+
+/* ---------- emergency access ---------- */
+function viewAccess(){
+  var granted=S.access;
+  return doctorShell('<div class="pagehead"><div><h2>Emergency Record Access</h2><p>Confirm the reason before any medical information is shown.</p></div></div>'+
+    '<div class="card" style="max-width:720px"><dl class="reasonbox"><div><dt>Reason</dt><dd>Emergency treatment</dd></div><div><dt>Doctor</dt><dd>Dr. Priya Sharma — DOC1001</dd></div><div style="grid-column:1 / -1"><dt>Patient</dt><dd>Arun Kumar — PAT1024</dd></div></dl>'+
+    '<label class="checkrow"><input type="checkbox" id="confirm" '+(S.confirm||granted?'checked':'')+(granted?' disabled':'')+'><span>I confirm that I am accessing this record for legitimate patient care.</span></label>'+
+    (S.accessErr&&!granted?'<div class="err" role="alert">Tick the confirmation to request emergency access.</div>':'')+
+    (granted?'<div class="granted" role="status">'+ic('check',22)+'Emergency access granted for this demo.</div><p class="muted sm-text" style="margin-top:10px">An access log entry was created.</p>'+
+      '<div class="nextrow"><button class="btn primary lg" data-go="summary">Open Emergency Summary</button><button class="btn lg" data-go="audit">View access log</button></div>':
+      '<div class="nextrow"><button class="btn danger lg" data-act="request-access">'+ic('shield',20)+'Request Emergency Access</button><button class="btn lg" data-go="search">Cancel</button></div>')+
+    '</div><div class="secure">'+ic('lock',16)+'This request is recorded in the access log. Demo only. No real authorization is performed.</div>');
+}
+
+/* ---------- emergency summary ---------- */
+function srcBtn(id){return '<button class="src" data-act="modal" data-arg="'+id+'">'+ic('link',14)+'View source</button>';}
+function viewSummary(){
+  var A=SUMMARY;
+  var meds='<ul class="list">'+A.meds.map(function(m){return '<li><b>'+m.t+'</b><span class="muted sm-text">'+m.n+'</span>'+srcBtn(m.r)+'</li>';}).join('')+'</ul>';
+  function simple(arr){return '<ul class="list">'+arr.map(function(m){return '<li><b>'+m.t+'</b>'+srcBtn(m.r)+'</li>';}).join('')+'</ul>';}
+  return doctorShell(ptHead()+ptTabs('summary')+
+    '<div class="pagehead" style="margin-bottom:14px"><div><h2>Emergency Patient Summary</h2><p>Arun Kumar, PAT1024, 42 years</p></div></div>'+
+    '<section class="allergy" aria-label="Allergies"><div class="icon">'+ic('alert',28)+'</div><div style="flex:1;min-width:200px"><h2>Allergies</h2><div class="big">'+A.allergies[0].t+'</div></div><div>'+srcBtn(A.allergies[0].r)+'<div class="sm-text muted">Documented 12 March 2024</div></div></section>'+
+    '<div class="grid g3">'+
+    '<div class="card"><h3><span class="badge-ic tone-blue">'+ic('pill',20)+'</span>Current medications</h3>'+meds+'</div>'+
+    '<div class="card"><h3><span class="badge-ic tone-amber">'+ic('scissors',20)+'</span>Previous surgeries</h3>'+simple(A.surgeries)+'</div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('activity',20)+'</span>Major medical history</h3>'+simple(A.history)+'</div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('flask',20)+'</span>Recent lab results</h3>'+simple(A.labs)+'</div>'+
+    '<div class="card"><h3><span class="badge-ic tone-green">'+ic('scan',20)+'</span>Relevant scans</h3>'+simple(A.scans)+'</div>'+
+    '<div class="card callout"><h3>'+ic('info',20)+'Important Historical Information</h3><p>Previous penicillin allergy is recorded in the patient\'s history. Verify medication choices against the patient\'s documented allergy information.</p></div></div>'+
+    '<div class="note">'+ic('info',18)+'<span>This summary only organizes existing fictional records. It does not diagnose, prescribe medication, or make any medical decision.</span></div>'+
+    '<div class="nextrow"><button class="btn primary" data-go="timeline">Continue to health timeline</button><button class="btn" data-go="records">Full medical record</button><button class="btn" data-go="sources">Summary sources</button></div>');
+}
+
+/* ---------- record detail pieces ---------- */
+function docBody(r){
+  var b='';
+  if(r.table)b+='<table class="tbl"><thead><tr><th>Test</th><th>Result</th><th>Reference range</th></tr></thead><tbody>'+r.table.map(function(t){return '<tr><td>'+t[0]+'</td><td><b>'+t[1]+'</b></td><td>'+t[2]+'</td></tr>';}).join('')+'</tbody></table>';
+  if(r.rx)b+='<table class="tbl"><thead><tr><th>Medicine</th><th>Directions</th><th>Duration</th></tr></thead><tbody>'+r.rx.map(function(t){return '<tr><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+t[2]+'</td></tr>';}).join('')+'</tbody></table>';
+  if(r.findings)b+=dl([['Findings',r.findings.f],['Impression',r.findings.i]]);
+  b+=dl(r.details);
+  return b;
+}
+function docView(r){
+  return '<div class="doc"><span class="wm">Fictional demo document</span><h4>'+r.title+'</h4><div class="muted sm-text">'+r.srcLabel+', '+r.long+'</div>'+
+    '<div class="sm-text" style="margin-top:6px">Patient: Arun Kumar, PAT1024</div><div class="sm-text">'+r.by+', '+r.place+'</div>'+docBody(r)+'</div>';
+}
+function openModal(id){
+  var r=rec(id);if(!r)return;
+  modalRoot.innerHTML='<div class="overlay" data-act="close-modal"><div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(r.title)+'" data-stop="1">'+
+    '<div class="modal-head"><div><span class="chip '+(r.type==='allergy'?'red':'')+'">'+TYPE_LABEL[r.type]+'</span><h3 style="margin-top:8px">'+r.title+'</h3></div><button class="btn sm" data-act="close-modal" id="mclose" aria-label="Close">'+ic('x',16)+'Close</button></div>'+
+    docView(r)+'<div class="nextrow" style="margin-top:16px"><button class="btn" data-act="close-modal">Close</button></div></div></div>';
+  var c=document.getElementById('mclose');if(c)c.focus();
+}
+function closeModal(){modalRoot.innerHTML='';}
+
+/* ---------- timeline ---------- */
+function viewTimeline(){
+  var sel=rec(S.tlSel)||rec('r-allergy');
+  var items=TIMELINE.map(function(e){
+    var r=rec(e.r);
+    return '<li class="tl-item '+(e.tone||'')+(S.tlSel===e.r?' sel':'')+'"><div class="tl-date"><b>'+e.label+'</b><span>'+r.short+'</span></div><div class="tl-dot"></div>'+
+      '<button class="tl-card" data-act="tl" data-arg="'+e.r+'" aria-pressed="'+(S.tlSel===e.r)+'"><b>'+e.text+'</b><small>'+TYPE_LABEL[r.type]+'</small></button></li>';
+  }).join('');
+  var panel='<div class="card sticky"><span class="chip '+(sel.type==='allergy'?'red':'')+'">'+TYPE_LABEL[sel.type]+'</span><h3 style="margin:8px 0 2px">'+sel.title+'</h3>'+
+    '<div class="muted sm-text">Source record: '+sel.srcLabel+', '+sel.long+'</div><div class="sm-text" style="margin-top:2px">'+sel.by+', '+sel.place+'</div><p style="margin-top:12px">'+sel.summary+'</p>'+dl(sel.details)+
+    '<div class="nextrow"><button class="btn primary sm" data-act="modal" data-arg="'+sel.id+'">'+(sel.type==='prescription'?'View Prescription':'View Report')+'</button><button class="btn sm" data-act="focus-rec" data-arg="'+sel.id+'">Open in full record</button></div></div>';
+  return doctorShell(ptHead()+ptTabs('timeline')+'<div class="pagehead" style="margin-bottom:14px"><div><h2>Health timeline</h2><p>Select an event to see its fictional source record.</p></div></div>'+
+    '<div class="split"><ol class="tl">'+items+'</ol><div>'+panel+'</div></div>'+
+    '<div class="nextrow"><button class="btn" data-go="summary">'+ic('back',16)+'Back to Emergency Summary</button><button class="btn primary" data-go="records">Continue to full record</button></div>');
+}
+
+/* ---------- full record ---------- */
+var FILTERS=[['all','All'],['consultation','Consultations'],['diagnosis','Diagnoses'],['prescription','Prescriptions'],['lab','Lab reports'],['scan','Scan reports'],['surgery','Surgeries'],['allergy','Allergies'],['medication','Current medications']];
+function recCard(r){
+  return '<article class="rec'+(S.focus===r.id?' flash':'')+'" id="rec-'+r.id+'"><div class="rec-ic '+TYPE_TONE[r.type]+'" style="'+(TYPE_TONE[r.type]?'':'background:var(--teal-soft);color:var(--teal-text)')+'">'+ic(TYPE_ICON[r.type],20)+'</div>'+
+    '<div><div class="rec-top"><h3 style="margin:0;font-size:17px">'+r.title+'</h3><span class="chip '+(r.type==='allergy'?'red':'')+'">'+TYPE_LABEL[r.type]+'</span></div><div class="muted sm-text">'+r.by+', '+r.place+'</div><p>'+r.summary+'</p></div>'+
+    '<div class="rec-act"><button class="btn sm" data-act="modal" data-arg="'+r.id+'">'+(r.type==='prescription'?'View Prescription':'View Report')+'</button></div></article>';
+}
+function viewRecords(){
+  var list;
+  if(S.filter==='medication'){
+    list='<div class="dategrp"><h4>Current medications</h4>'+SUMMARY.meds.map(function(m){var r=rec(m.r);return recCard(r);}).join('')+'</div>';
+  } else {
+    var rs=RECORDS.filter(function(r){return S.filter==='all'||r.type===S.filter;});
+    var out='',last='';
+    rs.forEach(function(r){if(r.long!==last){if(last)out+='</div>';out+='<div class="dategrp"><h4>'+r.long+'</h4>';last=r.long;}out+=recCard(r);});
+    if(last)out+='</div>';
+    list=out||'<div class="card">No records of this type.</div>';
+  }
+  var active=(S.filter==='all')?'<div class="grid g2" style="margin-bottom:6px"><div class="card" style="border-color:var(--red)"><h3><span class="badge-ic tone-red">'+ic('alert',20)+'</span>Allergies</h3><b>Penicillin</b> <span class="muted sm-text">documented 12 March 2024</span></div>'+
+    '<div class="card"><h3><span class="badge-ic tone-blue">'+ic('pill',20)+'</span>Current medications</h3><b>Medicine A</b>, <b>Medicine B</b></div></div>':'';
+  return doctorShell(ptHead()+ptTabs('records')+'<div class="pagehead" style="margin-bottom:14px"><div><h2>Full medical record</h2><p>All fictional records for Arun Kumar, newest first.</p></div><button class="btn" data-go="summary">'+ic('back',16)+'Back to Emergency Summary</button></div>'+
+    active+'<div class="chips-row" style="margin-top:16px">'+FILTERS.map(function(f){return '<button class="fchip'+(S.filter===f[0]?' on':'')+'" data-act="filter" data-arg="'+f[0]+'">'+f[1]+'</button>';}).join('')+'</div>'+list+
+    '<div class="nextrow"><button class="btn" data-go="summary">'+ic('back',16)+'Back to Emergency Summary</button><button class="btn primary" data-go="audit">Continue to access log</button></div>');
+}
+
+/* ---------- summary sources ---------- */
+function viewSources(){
+  var rows=SOURCES.map(function(s){var r=rec(s[1]);return '<tr><td><b>'+s[0]+'</b></td><td>'+r.srcLabel+', '+r.long+'</td><td style="text-align:right"><button class="btn sm" data-act="modal" data-arg="'+r.id+'">View source</button></td></tr>';}).join('');
+  return doctorShell(ptHead()+ptTabs('sources')+'<div class="pagehead" style="margin-bottom:14px"><div><h2>Summary Sources</h2><p>How the emergency summary was assembled from existing records.</p></div></div>'+
+    '<div class="card"><h3>From records to summary</h3><div class="how"><span class="chip blue">Existing fictional records</span><span class="muted">sorted by type and date</span><span class="chip blue">Key facts extracted</span><span class="muted">each linked to its record</span><span class="chip green">Emergency summary</span></div>'+
+    '<p class="muted" style="margin-top:10px">The summary only restates what is already written in the records. Nothing is invented, inferred or diagnosed.</p></div>'+
+    '<div class="card" style="margin-top:16px"><div class="scroll"><table class="tbl"><thead><tr><th>Summary point</th><th>Source</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+    '<div class="nextrow"><button class="btn" data-go="summary">'+ic('back',16)+'Back to Emergency Summary</button><button class="btn primary" data-go="audit">Continue to access log</button></div>');
+}
+
+/* ---------- audit log ---------- */
+function logTable(entries,showPatient){
+  return '<div class="scroll"><table class="tbl"><thead><tr><th>Doctor</th><th>Patient</th><th>Type</th><th>Date</th><th>Time</th><th>Reason</th></tr></thead><tbody>'+
+    entries.map(function(e){return '<tr class="'+(e.isNew?'newrow':'')+'"><td>'+e.doctor+'<div class="muted sm-text">'+e.docId+'</div></td><td>'+e.patient+'<div class="muted sm-text">'+e.patId+'</div></td><td><span class="chip '+(e.type==='Emergency'?'red':'blue')+'">'+e.type+'</span></td><td>'+e.date+'</td><td>'+e.time+'</td><td>'+e.reason+'</td></tr>';}).join('')+'</tbody></table></div>';
+}
+function viewAudit(){
+  var latest=S.log.filter(function(e){return e.isNew;})[0];
+  var feature=latest?'<div class="card" style="border-color:var(--teal);margin-bottom:16px"><h3><span class="badge-ic">'+ic('shield',20)+'</span>Latest access entry</h3>'+
+    dl([['Doctor','Dr. Priya Sharma'],['Doctor ID','DOC1001'],['Patient','Arun Kumar'],['Patient ID','PAT1024'],['Access type','Emergency'],['Date','02 October 2026'],['Time','10:42 AM'],['Reason','Emergency treatment']])+'</div>':
+    '<div class="card" style="margin-bottom:16px"><b>No emergency access in this session yet.</b><p class="muted" style="margin-top:4px">Request emergency access to a patient record and the entry will appear here.</p></div>';
+  var showTabs=S.patient&&S.access;
+  return doctorShell((showTabs?ptHead()+ptTabs('audit'):'')+'<div class="pagehead" style="margin-bottom:14px"><div><h2>Access audit log</h2><p>Every medical-record access is recorded for accountability.</p></div></div>'+feature+
+    '<div class="card"><h3>All access history</h3>'+logTable(S.log)+'</div>'+
+    '<div class="secure">'+ic('lock',16)+'Every medical-record access is recorded for accountability.</div>'+
+    (showTabs?'<div class="nextrow"><button class="btn" data-go="summary">'+ic('back',16)+'Back to Emergency Summary</button></div>':''));
+}
+
+/* ---------- admin ---------- */
+function viewAdmin(){
+  var recent=S.log.slice(0,4).map(function(e){return '<div><div><b>'+e.doctor+'</b><div class="muted sm-text">'+e.patient+', '+e.date+' '+e.time+'</div></div><span class="chip '+(e.type==='Emergency'?'red':'blue')+'">'+e.type+'</span></div>';}).join('');
+  var vals=[1,2,3,2,4,3,3],days=['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+  var bars='<div class="bars" role="img" aria-label="Emergency accesses over the last seven days">'+vals.map(function(v,i){return '<div><span>'+v+'</span><i style="height:'+(v*22)+'px"></i><span>'+days[i]+'</span></div>';}).join('')+'</div>';
+  var list=S.log.filter(function(e){return S.adminFilter==='all'||e.type==='Emergency';});
+  return page('<main class="main" style="margin:0 auto;max-width:1180px"><div class="pagehead"><div><h2>Hospital administration</h2><p>Demo General Hospital (fictional). Overview of staff, patients and record access.</p></div></div>'+
+    '<div class="stats"><div class="card stat"><span class="badge-ic">'+ic('user',22)+'</span><div><div class="num">42</div><div class="muted">Doctors</div></div></div>'+
+    '<div class="card stat"><span class="badge-ic tone-blue">'+ic('users',22)+'</span><div><div class="num">1,286</div><div class="muted">Patients</div></div></div>'+
+    '<div class="card stat"><span class="badge-ic tone-red">'+ic('alert',22)+'</span><div><div class="num">3</div><div class="muted">Emergency cases today</div></div></div></div>'+
+    '<div class="grid g2" style="margin-top:16px"><div class="card"><h3>Recent access requests</h3><div class="rowlist">'+recent+'</div></div><div class="card"><h3>Emergency accesses, last 7 days</h3>'+bars+'</div></div>'+
+    '<div class="card" style="margin-top:16px"><h3>Access logs</h3><div class="chips-row"><button class="fchip'+(S.adminFilter==='all'?' on':'')+'" data-act="admin-filter" data-arg="all">All access</button><button class="fchip'+(S.adminFilter==='em'?' on':'')+'" data-act="admin-filter" data-arg="em">Emergency only</button></div>'+logTable(list)+'</div>'+
+    '<div class="secure">'+ic('lock',16)+'Every medical-record access is recorded for accountability.</div></main>');
+}
+
+/* ---------- patient ---------- */
+function miniRows(type,btn){
+  return '<div class="rowlist">'+RECORDS.filter(function(r){return r.type===type;}).map(function(r){return '<div><div><b>'+r.title+'</b><div class="muted sm-text">'+r.long+', '+r.by+'</div></div><button class="btn sm" data-act="modal" data-arg="'+r.id+'">'+btn+'</button></div>';}).join('')+'</div>';
+}
+function viewPatient(){
+  var providers={};RECORDS.forEach(function(r){providers[r.by.split(',')[0]+'|'+r.place]=1;});
+  var provRows=Object.keys(providers).map(function(k){var p=k.split('|');return '<div><div><b>'+p[0]+'</b><div class="muted sm-text">'+p[1]+'</div></div></div>';}).join('');
+  var tl=TIMELINE.slice().reverse().map(function(e){var r=rec(e.r);return '<div><div><b>'+e.text+'</b><div class="muted sm-text">'+r.long+'</div></div></div>';}).join('');
+  var mine=S.log.filter(function(e){return e.patId==='PAT1024';}).slice(0,4).map(function(e){return '<div><div><b>'+e.doctor+'</b><div class="muted sm-text">'+e.date+', '+e.time+'</div></div><span class="chip '+(e.type==='Emergency'?'red':'blue')+'">'+e.type+'</span></div>';}).join('');
+  return page('<main class="main" style="margin:0 auto;max-width:1180px"><div class="pagehead"><div><h2>My health record</h2><p>Fictional demo patient dashboard.</p></div></div>'+
+    '<div class="grid g2"><div class="card"><h3><span class="badge-ic">'+ic('user',20)+'</span>Personal information</h3>'+dl([['Name','Arun Kumar'],['Patient ID','PAT1024'],['Date of birth','14 March 1984'],['Age','42 years'],['Sex','Male'],['Blood group','O+'],['Known allergy','Penicillin']])+'</div>'+
+    '<div class="card"><h3><span class="badge-ic tone-blue">'+ic('building',20)+'</span>Doctors and hospitals</h3><div class="rowlist">'+provRows+'</div></div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('clip',20)+'</span>Previous visits</h3>'+miniRows('consultation','View Report')+'</div>'+
+    '<div class="card"><h3><span class="badge-ic tone-blue">'+ic('pill',20)+'</span>Prescriptions</h3>'+miniRows('prescription','View Prescription')+'</div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('flask',20)+'</span>Lab reports</h3>'+miniRows('lab','View Report')+'</div>'+
+    '<div class="card"><h3><span class="badge-ic tone-green">'+ic('scan',20)+'</span>Scan reports</h3>'+miniRows('scan','View Report')+'</div>'+
+    '<div class="card"><h3><span class="badge-ic">'+ic('clock',20)+'</span>Medical timeline</h3><div class="rowlist">'+tl+'</div></div>'+
+    '<div class="card"><h3><span class="badge-ic tone-green">'+ic('shield',20)+'</span>Who accessed my record</h3><div class="rowlist">'+mine+'</div><p class="muted sm-text" style="margin-top:10px">Every medical-record access is recorded for accountability.</p></div></div></main>');
+}
+
+var VIEWS={landing:viewLanding,'login-doctor':function(){return viewLogin('doctor');},'login-admin':function(){return viewLogin('admin');},'login-patient':function(){return viewLogin('patient');},
+  dashboard:viewDashboard,search:viewSearch,access:viewAccess,summary:viewSummary,timeline:viewTimeline,records:viewRecords,sources:viewSources,audit:viewAudit,admin:viewAdmin,patient:viewPatient};
+
+/* ---------- render & routing ---------- */
+function render(top){
+  var r=S.route;
+  if(ROUTES.indexOf(r)<0)r='landing';
+  if(DOCTOR_ROUTES.indexOf(r)>-1&&S.role!=='doctor')r='login-doctor';
+  if(r==='access'&&!S.patient)r='search';
+  if(PT_ROUTES.indexOf(r)>-1&&!S.access)r=S.patient?'access':'search';
+  if(r==='admin'&&S.role!=='admin')r='login-admin';
+  if(r==='patient'&&S.role!=='patient')r='login-patient';
+  S.route=r;
+  app.innerHTML=VIEWS[r]();
+  try{if(location.hash!=='#'+r)history.replaceState(null,'','#'+r);}catch(e){}
+  document.title='Emergency Medical Record Assistant (demo)';
+  if(top)window.scrollTo(0,0);
+  if(S.focus){var el=document.getElementById('rec-'+S.focus);if(el)el.scrollIntoView({block:'center'});S.focus=null;}
+}
+function go(r){S.route=r;S.err='';closeModal();try{if(location.hash!=='#'+r)location.hash=r;}catch(e){}render(true);}
+window.addEventListener('hashchange',function(){var h=location.hash.slice(1);if(h&&h!==S.route){S.route=h;closeModal();render(true);}});
+
+function login(role){
+  var id=(document.getElementById('uid').value||'').trim(),pw=document.getElementById('pwd').value||'',c=CREDS[role];
+  if(id.toUpperCase()===c.id&&pw===c.pw){S.role=role;S.err='';go(role==='doctor'?'dashboard':role);}
+  else{S.err='Incorrect ID or password. Use the demo credentials shown below the form.';render();var u=document.getElementById('uid');if(u)u.value=id;}
+}
+function logout(){S.role=null;S.patient=null;S.access=false;S.confirm=false;S.accessErr=false;S.q='';S.searched=false;S.emergency=false;go('landing');}
+function doSearch(){var q=document.getElementById('q');if(q)S.q=q.value;S.searched=true;render();}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-go],[data-act]');
+  if(!t)return;
+  if(t.getAttribute('data-act')==='close-modal'&&t.classList.contains('overlay')&&e.target!==t)return;
+  var g=t.getAttribute('data-go');
+  if(g){go(g);return;}
+  var a=t.getAttribute('data-act'),arg=t.getAttribute('data-arg');
+  switch(a){
+    case 'login':login(arg);break;
+    case 'fill':document.getElementById('uid').value=CREDS[arg].id;document.getElementById('pwd').value=CREDS[arg].pw;break;
+    case 'logout':logout();break;
+    case 'emerg':S.emergency=true;S.mode='id';S.q='';S.searched=false;go('search');break;
+    case 'dash-search':var d=(document.getElementById('dq').value||'').trim();if(!d){toast('Enter a patient ID or name.');break;}
+      S.mode=/^pat/i.test(d)?'id':'name';S.q=d;S.searched=true;go('search');break;
+    case 'mode':S.mode=arg;S.q='';S.searched=false;render();break;
+    case 'search':doSearch();break;
+    case 'quick':S.mode='id';S.q=arg;S.searched=true;go('search');break;
+    case 'unavailable':toast('Only PAT1024 has a full demo record in this prototype.');break;
+    case 'open-record':S.patient='PAT1024';S.accessErr=false;go('access');break;
+    case 'request-access':
+      if(!S.confirm){S.accessErr=true;render();break;}
+      S.access=true;S.accessErr=false;
+      if(!S.logged){S.log.unshift(NEW_ENTRY);S.logged=true;}
+      render();break;
+    case 'modal':openModal(arg);break;
+    case 'close-modal':closeModal();break;
+    case 'tl':S.tlSel=arg;render();break;
+    case 'filter':S.filter=arg;render();break;
+    case 'focus-rec':S.filter='all';S.focus=arg;go('records');break;
+    case 'admin-filter':S.adminFilter=arg;render();break;
+  }
+});
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='confirm'){S.confirm=e.target.checked;if(S.confirm&&S.accessErr){S.accessErr=false;render();}}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'&&e.target&&e.target.id){
+    if((e.target.id==='uid'||e.target.id==='pwd')&&S.route.indexOf('login-')===0){login(S.route.replace('login-',''));}
+    else if(e.target.id==='q'){doSearch();}
+    else if(e.target.id==='dq'){var b=document.querySelector('[data-act="dash-search"]');if(b)b.click();}
+  }
+});
+
+var h=location.hash.slice(1);
+S.route=(h&&ROUTES.indexOf(h)>-1)?h:'landing';
+render(false);
+})();
+</script>
+</body>
+</html>
